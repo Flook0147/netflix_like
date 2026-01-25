@@ -1,13 +1,21 @@
 # =========================
-# Go build artifacts
+# Go
 # =========================
 *.exe
 *.exe~
-*.out
+*.dll
+*.so
+*.dylib
 *.test
-*.db
+*.out
 bin/
 build/
+
+# =========================
+# Go workspace / tooling
+# =========================
+go.work
+go.work.sum
 
 # =========================
 # Environment / Secrets
@@ -17,9 +25,8 @@ build/
 !.env.example
 
 # =========================
-# Database (Auth service)
+# Databases
 # =========================
-auth.db
 *.db
 *.sqlite
 *.sqlite3
@@ -36,9 +43,28 @@ auth.db
 .idea/
 *.swp
 *.swo
+*.tmp
 
 # =========================
 # OS
 # =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# Node / Frontend (future-proof)
+# =========================
+node_modules/
+dist/
+build/
+
+# =========================
+# Test / Coverage
+# =========================
+coverage.out
+coverage.html
+
+# =========================
+# Docker
+# =========================
+*.pid

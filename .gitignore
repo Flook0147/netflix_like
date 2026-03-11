@@ -68,3 +68,5 @@ coverage.html
 # Docker
 # =========================
 *.pid
+go.mod
+go.sum

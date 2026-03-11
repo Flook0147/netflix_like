@@ -7,6 +7,7 @@ import (
 
 	authhttp "github.com/Flook0147/netflix_like/internal/auth/adapter/inbound/http"
 	authapp "github.com/Flook0147/netflix_like/internal/auth/app"
+	userapp "github.com/Flook0147/netflix_like/internal/user/app"
 
 	userdb "github.com/Flook0147/netflix_like/internal/user/adapter/outbound/db"
 	"github.com/Flook0147/netflix_like/internal/user/domain"
@@ -50,7 +51,9 @@ func main() {
 
 	userRepo := userdb.NewUserRepository(db)
 
-	authService := authapp.NewAuthService(userRepo)
+	userService := userapp.NewUserService(userRepo)
+
+	authService := authapp.NewAuthService(userService)
 
 	authHandler := authhttp.NewAuthHandler(authService)
 

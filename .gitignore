@@ -70,4 +70,4 @@ coverage.html
 *.pid
 go.mod
 go.sum
-.yml
+*.yml

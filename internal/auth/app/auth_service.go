@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/Flook0147/netflix_like/internal/auth/port/outbound"
 	"github.com/Flook0147/netflix_like/internal/auth/utils"
@@ -58,11 +57,15 @@ func (s *AuthService) Login(username, password string) (string, string, error) {
 		return "", "", err
 	}
 
+	err = s.refreshTokenPort.SaveRefreshToken(user.Username, refreshToken)
+	if err != nil {
+		return "", "", err
+	}
+
 	return accessToken, refreshToken, nil
 }
 
 func (s *AuthService) ValidateToken(token string) (string, error) {
-	fmt.Println("JWT_SECRET:", os.Getenv("JWT_SECRET"))
 	username, err := utils.ValidateToken(token)
 	if err != nil {
 		return "", err
@@ -72,9 +75,21 @@ func (s *AuthService) ValidateToken(token string) (string, error) {
 }
 
 func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
-	token, refreshToken, err := utils.RefreshToken(refreshToken)
+
+	_, err := s.refreshTokenPort.FindRefreshToken(refreshToken)
+	if err != nil {
+		return "", "", fmt.Errorf("invalid refresh token")
+	}
+
+	newAccessToken, newRefreshToken, err := utils.RefreshToken(refreshToken)
 	if err != nil {
 		return "", "", err
 	}
-	return token, refreshToken, nil
+
+	s.refreshTokenPort.DeleteRefreshToken(refreshToken)
+
+	username, _ := utils.ValidateRefreshToken(newRefreshToken)
+	s.refreshTokenPort.SaveRefreshToken(username, newRefreshToken)
+
+	return newAccessToken, newRefreshToken, nil
 }

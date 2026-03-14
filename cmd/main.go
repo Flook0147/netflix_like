@@ -78,7 +78,6 @@ func main() {
 	app := fiber.New()
 
 	authhttp.RegisterRoutes(app, authHandler)
-	// fmt.Println("Registering user routes...")
 	userRouter.RegisterRoutes(app, userHandler)
 
 	log.Println("Server started at :", serverPort)

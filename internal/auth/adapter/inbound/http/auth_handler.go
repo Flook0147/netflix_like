@@ -76,16 +76,27 @@ func (h *AuthHandler) Login(c fiber.Ctx) error {
 	})
 }
 
+type RefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 func (h *AuthHandler) RefreshToken(c fiber.Ctx) error {
-	token := c.Get("Authorization")
-	if token == "" {
-		return c.Status(401).JSON(fiber.Map{
-			"error": "missing authorization header",
+
+	var req RefreshRequest
+
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "invalid request",
 		})
 	}
-	token = token[7:] // Remove "Bearer " prefix
 
-	newToken, newRefreshToken, err := h.auth.RefreshToken(token)
+	if req.RefreshToken == "" {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "missing refresh token",
+		})
+	}
+
+	newToken, newRefreshToken, err := h.auth.RefreshToken(req.RefreshToken)
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error": err.Error(),

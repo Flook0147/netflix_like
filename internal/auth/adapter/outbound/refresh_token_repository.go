@@ -56,3 +56,16 @@ func (r *RefreshTokenRepository) DeleteRefreshToken(refreshToken string) error {
 	}
 	return nil
 }
+
+func (r *RefreshTokenRepository) FindRefreshToken(refreshToken string) (*domain.RefreshToken, error) {
+	tokenHash := hashToken(refreshToken)
+
+	var rt domain.RefreshToken
+
+	err := r.DB.Where("token_hash = ?", tokenHash).First(&rt).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &rt, nil
+}

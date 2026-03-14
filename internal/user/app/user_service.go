@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-
 	"github.com/Flook0147/netflix_like/internal/user/domain"
 	outbound "github.com/Flook0147/netflix_like/internal/user/port/outbound"
 )
@@ -33,7 +31,6 @@ func (s *UserService) ValidateToken(token string) (string, error) {
 }
 
 func (s *UserService) GetUserFromToken(token string) (*domain.User, error) {
-	fmt.Println("GetUserFromToken called with token:", token)
 	username, err := s.token_port.ValidateToken(token)
 	if err != nil {
 		return nil, err

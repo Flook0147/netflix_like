@@ -9,6 +9,8 @@ import (
 	authapp "github.com/Flook0147/netflix_like/internal/auth/app"
 	userapp "github.com/Flook0147/netflix_like/internal/user/app"
 
+	authOutbound "github.com/Flook0147/netflix_like/internal/auth/adapter/outbound"
+	userOutbound "github.com/Flook0147/netflix_like/internal/user/adapter/outbound"
 	userdb "github.com/Flook0147/netflix_like/internal/user/adapter/outbound/db"
 	"github.com/Flook0147/netflix_like/internal/user/domain"
 
@@ -53,15 +55,21 @@ func main() {
 
 	userService := userapp.NewUserService(userRepo)
 
-	authService := authapp.NewAuthService(userService)
+	tokenRepo := authOutbound.NewRefreshTokenRepository(db)
+
+	authService := authapp.NewAuthService(userService, tokenRepo)
 
 	authHandler := authhttp.NewAuthHandler(authService)
 
-	router := authhttp.NewRouter(authHandler)
+	tokenHandler := userOutbound.TokenHandler{}.NewTokenHandler(authService)
+
+	userService.SetTokenPort(tokenHandler)
+
+	authRouter := authhttp.NewRouter(authHandler)
 
 	log.Println("Server started at :", serverPort)
 
-	if err := router.Listen(":" + serverPort); err != nil {
+	if err := authRouter.Listen(":" + serverPort); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -9,6 +9,7 @@ func NewRouter(authHandler *AuthHandler) *fiber.App {
 
 	app.Post("/register", authHandler.Register)
 	app.Post("/login", authHandler.Login)
+	app.Post("/refresh", authHandler.RefreshToken)
 
 	return app
 }

@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/Flook0147/netflix_like/internal/auth/port/outbound"
 	"github.com/Flook0147/netflix_like/internal/auth/utils"
@@ -9,21 +10,23 @@ import (
 )
 
 type AuthService struct {
-	userPort outbound.UserPort
+	userPort         outbound.UserPort
+	refreshTokenPort outbound.RefreshTokenPort
 }
 
-func NewAuthService(userPort outbound.UserPort) *AuthService {
+func NewAuthService(userPort outbound.UserPort, refreshTokenPort outbound.RefreshTokenPort) *AuthService {
 	return &AuthService{
-		userPort: userPort,
+		userPort:         userPort,
+		refreshTokenPort: refreshTokenPort,
 	}
 }
 
-func (s *AuthService) Register(username, password, name string) error {
+func (s *AuthService) Register(username, password, name, email string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	err = s.userPort.CreateUser(username, string(hashedPassword), name)
+	err = s.userPort.CreateUser(username, string(hashedPassword), name, email)
 	if err != nil {
 		return err
 	}
@@ -56,4 +59,22 @@ func (s *AuthService) Login(username, password string) (string, string, error) {
 	}
 
 	return accessToken, refreshToken, nil
+}
+
+func (s *AuthService) ValidateToken(token string) (string, error) {
+	fmt.Println("JWT_SECRET:", os.Getenv("JWT_SECRET"))
+	username, err := utils.ValidateToken(token)
+	if err != nil {
+		return "", err
+	}
+
+	return username, nil
+}
+
+func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
+	token, refreshToken, err := utils.RefreshToken(refreshToken)
+	if err != nil {
+		return "", "", err
+	}
+	return token, refreshToken, nil
 }

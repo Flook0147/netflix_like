@@ -15,25 +15,26 @@ func NewUserRepository(db *gorm.DB) *UserHandler {
 	}
 }
 
-func (h *UserHandler) CreateUser(username, password, name string) error {
+func (h *UserHandler) CreateUser(username, password, name, email string) error {
 	// Implement user creation logic here, e.g., save to database
-	err := h.DB.Create(&domain.User{
+	result := h.DB.Create(&domain.User{
 		Username:   username,
 		Password:   password,
 		Name:       name,
+		Email:      email,
 		ProfileURL: "",
 	})
-	if err.Error != nil {
-		return err.Error
+	if result.Error != nil {
+		return result.Error
 	}
 	return nil
 }
 
 func (h *UserHandler) GetUser(username string) (*domain.User, error) {
 	var user domain.User
-	err := h.DB.Where("username = ?", username).First(&user)
-	if err.Error != nil {
-		return nil, err.Error
+	result := h.DB.Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
 	}
 	return &user, nil
 }

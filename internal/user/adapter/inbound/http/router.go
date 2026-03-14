@@ -4,10 +4,9 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func NewRouter(userHandler *UserHandler) *fiber.App {
-	app := fiber.New()
+func RegisterRoutes(app *fiber.App, handler *UserHandler) {
 
-	// Define user-related routes here, e.g.:
-	app.Get("/user/me", userHandler.userPort.GetUserFromToken)
-	return app
+	user := app.Group("/user")
+
+	user.Get("/me", handler.GetUserFromToken)
 }

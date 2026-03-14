@@ -8,8 +8,10 @@ import (
 	authhttp "github.com/Flook0147/netflix_like/internal/auth/adapter/inbound/http"
 	authapp "github.com/Flook0147/netflix_like/internal/auth/app"
 	userapp "github.com/Flook0147/netflix_like/internal/user/app"
+	"github.com/gofiber/fiber/v3"
 
 	authOutbound "github.com/Flook0147/netflix_like/internal/auth/adapter/outbound"
+	userRouter "github.com/Flook0147/netflix_like/internal/user/adapter/inbound/http"
 	userOutbound "github.com/Flook0147/netflix_like/internal/user/adapter/outbound"
 	userdb "github.com/Flook0147/netflix_like/internal/user/adapter/outbound/db"
 	"github.com/Flook0147/netflix_like/internal/user/domain"
@@ -65,11 +67,21 @@ func main() {
 
 	userService.SetTokenPort(tokenHandler)
 
-	authRouter := authhttp.NewRouter(authHandler)
+	// authRouter := authhttp.NewRouter(authHandler)
+
+	userHandler := userRouter.NewUserHandler(userService)
+
+	// userRouter := userRouter.NewRouter(userHandler)
 
 	log.Println("Server started at :", serverPort)
 
-	if err := authRouter.Listen(":" + serverPort); err != nil {
-		log.Fatal(err)
-	}
+	app := fiber.New()
+
+	authhttp.RegisterRoutes(app, authHandler)
+	// fmt.Println("Registering user routes...")
+	userRouter.RegisterRoutes(app, userHandler)
+
+	log.Println("Server started at :", serverPort)
+
+	log.Fatal(app.Listen(":" + serverPort))
 }

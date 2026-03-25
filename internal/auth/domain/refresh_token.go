@@ -11,6 +11,6 @@ type RefreshToken struct {
 	UserID    uuid.UUID `gorm:"type:uuid;not null"`
 	TokenHash string    `gorm:"not null"`
 	ExpiredAt time.Time `gorm:"not null"`
-	RevokedAt *time.Time
-	CreatedAt time.Time
+	RevokedAt time.Time `gorm:"not null"`
+	CreatedAt time.Time `gorm:"not null"`
 }

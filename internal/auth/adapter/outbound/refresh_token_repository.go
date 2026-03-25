@@ -38,6 +38,8 @@ func (r *RefreshTokenRepository) SaveRefreshToken(username, refreshToken string)
 	rt := domain.RefreshToken{
 		UserID:    user.UserId,
 		TokenHash: hashToken(refreshToken),
+		CreatedAt: time.Now(),
+		RevokedAt: time.Now(),
 		ExpiredAt: time.Now().Add(7 * 24 * time.Hour),
 	}
 

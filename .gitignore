@@ -71,3 +71,4 @@ coverage.html
 go.mod
 go.sum
 *.yml
+*.sql

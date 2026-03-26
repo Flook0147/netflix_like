@@ -5,10 +5,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type SubscriptionServicePort interface {
+type SubscriptionPort interface {
 	Subscribe(viewerID, planID uuid.UUID) error
 	Unsubscribe(viewerID, planID uuid.UUID) error
-	GetSubscriptionStatus(viewerID, planID uuid.UUID) (string, error)
+	GetSubscriptionStatus(viewerID uuid.UUID) (string, error)
 	ActivateSubscriptions(viewerID, planID uuid.UUID) error
 	GetSubscriptionDetails(viewerID uuid.UUID) ([]*domain.Subscription, error)
 }

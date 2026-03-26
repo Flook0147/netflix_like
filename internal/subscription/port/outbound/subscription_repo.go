@@ -10,7 +10,7 @@ import (
 type SubscriptionRepoPort interface {
 	CreateSubscription(viwerId, planId uuid.UUID) error
 	GetAllSubscription(viewerId uuid.UUID) ([]*domain.Subscription, error)
-	GetSubscription(viewerId, planId uuid.UUID) (*domain.Subscription, error)
+	GetSubscription(viewerId uuid.UUID) (*domain.Subscription, error)
 	UpdateSubscription(viewerId, planId uuid.UUID, status string, expired time.Time) error
 }
 

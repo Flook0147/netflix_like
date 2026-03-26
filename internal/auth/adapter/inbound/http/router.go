@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-func RegisterRoutes(app *fiber.App, handler *AuthHandler) {
+func RegisterRoutes(app fiber.Router, handler *AuthHandler) {
 
 	auth := app.Group("/auth")
 

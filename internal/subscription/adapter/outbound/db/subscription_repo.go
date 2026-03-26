@@ -43,9 +43,9 @@ func (s *SubscriptionRepo) GetAllSubscription(viewerId uuid.UUID) ([]*domain.Sub
 	return sub, nil
 }
 
-func (s *SubscriptionRepo) GetSubscription(viewerId, planId uuid.UUID) (*domain.Subscription, error) {
+func (s *SubscriptionRepo) GetSubscription(viewerId uuid.UUID) (*domain.Subscription, error) {
 	var sub *domain.Subscription
-	err := s.db.Where("viewer_id = ? AND plan_id = ?", viewerId, planId).First(&sub).Error
+	err := s.db.Where("viewer_id = ?", viewerId).First(&sub).Error
 	if err != nil {
 		return nil, err
 	}

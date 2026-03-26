@@ -31,7 +31,7 @@ func NewSubscriptionService(subRepo outbound.SubscriptionRepoPort, planRepo outb
 }
 
 func (s *SubscriptionService) Subscribe(viewerID, planID uuid.UUID) error {
-	sub, err := s.subRepo.GetSubscription(viewerID, planID)
+	sub, err := s.subRepo.GetSubscription(viewerID)
 	if err == nil && sub.Status != StatusInactive {
 		return fmt.Errorf("already subscribed")
 	}
@@ -43,7 +43,7 @@ func (s *SubscriptionService) Subscribe(viewerID, planID uuid.UUID) error {
 }
 
 func (s *SubscriptionService) Unsubscribe(viewerID, planID uuid.UUID) error {
-	sub, err := s.subRepo.GetSubscription(viewerID, planID)
+	sub, err := s.subRepo.GetSubscription(viewerID)
 	if err != nil {
 		return err
 	}
@@ -55,8 +55,8 @@ func (s *SubscriptionService) Unsubscribe(viewerID, planID uuid.UUID) error {
 	return s.subRepo.UpdateSubscription(viewerID, planID, StatusInactive, time.Now())
 }
 
-func (s *SubscriptionService) GetSubscriptionStatus(viewerID, planID uuid.UUID) (string, error) {
-	sub, err := s.subRepo.GetSubscription(viewerID, planID)
+func (s *SubscriptionService) GetSubscriptionStatus(viewerID uuid.UUID) (string, error) {
+	sub, err := s.subRepo.GetSubscription(viewerID)
 	if err != nil {
 		return StatusFailed, err
 	}
@@ -64,7 +64,7 @@ func (s *SubscriptionService) GetSubscriptionStatus(viewerID, planID uuid.UUID) 
 }
 
 func (s *SubscriptionService) ActivateSubscriptions(viewerID, planID uuid.UUID) error {
-	sub, err := s.subRepo.GetSubscription(viewerID, planID)
+	sub, err := s.subRepo.GetSubscription(viewerID)
 	if err != nil {
 		return err
 	}

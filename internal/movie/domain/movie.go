@@ -10,6 +10,6 @@ type Movie struct {
 	Duration     int       `json:"duration"`
 	BriefContent string    `json:"brief_content"`
 	PreviewURL   string    `json:"preview_url"`
-	MovieURL     string    `json:"movie_url"`
+	HLSPath      string    `json:"movie_url"`
 	CoverURL     string    `json:"cover_url"`
 }

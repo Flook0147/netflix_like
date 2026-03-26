@@ -26,10 +26,16 @@ import (
 	paymentapp "github.com/Flook0147/netflix_like/internal/payment/app"
 
 	// SUBSCRIPTION
+	subscriptionHandlers "github.com/Flook0147/netflix_like/internal/subscription/adapter/inbound/http"
 	subscriptionRepo "github.com/Flook0147/netflix_like/internal/subscription/adapter/outbound/db"
 	subscriptionapp "github.com/Flook0147/netflix_like/internal/subscription/app"
 
-	"github.com/Flook0147/netflix_like/internal/user/domain"
+	// MOVIE
+
+	movieHandlers "github.com/Flook0147/netflix_like/internal/movie/adapter/inbound/http"
+	movieRepos "github.com/Flook0147/netflix_like/internal/movie/adapter/outbound/db"
+	movieApp "github.com/Flook0147/netflix_like/internal/movie/app"
+	"github.com/Flook0147/netflix_like/internal/router"
 )
 
 func main() {
@@ -78,13 +84,26 @@ func main() {
 	planRepo := subscriptionRepo.NewSubscriptionPlanRepo(db)
 
 	subscriptionService := subscriptionapp.NewSubscriptionService(subRepo, planRepo, paymentService)
+	subscriptionHandler := subscriptionHandlers.NewSubscriptionHandler(subscriptionService)
 
-	fmt.Print(subscriptionService, paymentService)
+	// ========================
+	// Movie
+	// ========================
+
+	movieRepo := movieRepos.NewMovieRepository(db)
+	movieService := movieApp.NewMovieService(movieRepo, subscriptionService)
+	movieHandler := movieHandlers.NewMovieHandler(movieService)
 
 	// ========================
 	// HTTP SERVER
 	// ========================
 	app := fiber.New()
+	router.SetupRoutes(app, router.Handlers{
+		Auth:         authHandler,
+		User:         userHandler,
+		Subscription: subscriptionHandler,
+		Movie:        movieHandler,
+	})
 
 	authhttp.RegisterRoutes(app, authHandler)
 	userRouter.RegisterRoutes(app, userHandler)
@@ -111,7 +130,6 @@ func initDB() *gorm.DB {
 	}
 
 	log.Println("✅ Database connected")
-	db.AutoMigrate(&domain.User{})
 
 	return db
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Flook0147/netflix_like/internal/auth/port/outbound"
 	"github.com/Flook0147/netflix_like/internal/auth/utils"
+	"github.com/Flook0147/netflix_like/internal/user/domain"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -92,4 +93,13 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 	s.refreshTokenPort.SaveRefreshToken(username, newRefreshToken)
 
 	return newAccessToken, newRefreshToken, nil
+}
+
+func (s *AuthService) GetUserFromToken(token string) (*domain.User, error) {
+	username, err := utils.ValidateToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.userPort.GetUser(username)
 }

@@ -17,7 +17,6 @@ import (
 
 	// USER
 	userRouter "github.com/Flook0147/netflix_like/internal/user/adapter/inbound/http"
-	userOutbound "github.com/Flook0147/netflix_like/internal/user/adapter/outbound"
 	userdb "github.com/Flook0147/netflix_like/internal/user/adapter/outbound/db"
 	userapp "github.com/Flook0147/netflix_like/internal/user/app"
 
@@ -65,10 +64,7 @@ func main() {
 
 	authHandler := authhttp.NewAuthHandler(authService)
 
-	tokenHandler := userOutbound.TokenHandler{}.NewTokenHandler(authService)
-	userService.SetTokenPort(tokenHandler)
-
-	userHandler := userRouter.NewUserHandler(userService)
+	userHandler := userRouter.NewUserHandler(authService)
 
 	// ========================
 	// PAYMENT

@@ -3,17 +3,17 @@ package http
 import (
 	"strings"
 
-	"github.com/Flook0147/netflix_like/internal/user/port/inbound"
+	"github.com/Flook0147/netflix_like/internal/auth/port/inbound"
 	"github.com/gofiber/fiber/v3"
 )
 
 type UserHandler struct {
-	userPort inbound.UserPort
+	authPort inbound.AuthPort
 }
 
-func NewUserHandler(userPort inbound.UserPort) *UserHandler {
+func NewUserHandler(authPort inbound.AuthPort) *UserHandler {
 	return &UserHandler{
-		userPort: userPort,
+		authPort: authPort,
 	}
 }
 
@@ -32,14 +32,15 @@ func (h *UserHandler) GetUserFromToken(c fiber.Ctx) error {
 	}
 
 	token = strings.TrimPrefix(token, "Bearer ")
-	user, err := h.userPort.GetUserFromToken(token)
+
+	user, err := h.authPort.GetUserFromToken(token) // ✅ FIX HERE
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{
 			"error": "invalid token",
 		})
 	}
+
 	return c.Status(200).JSON(fiber.Map{
 		"user": user,
 	})
-
 }

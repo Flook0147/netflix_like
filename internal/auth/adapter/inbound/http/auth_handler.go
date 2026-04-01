@@ -30,6 +30,16 @@ type LoginResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// Register godoc
+// @Summary Register user
+// @Description Create a new user account
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body RegisterRequest true "Register request"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Router /auth/register [post]
 func (h *AuthHandler) Register(c fiber.Ctx) error {
 	var req RegisterRequest
 
@@ -52,6 +62,16 @@ func (h *AuthHandler) Register(c fiber.Ctx) error {
 	})
 }
 
+// Login godoc
+// @Summary Login user
+// @Description Authenticate user and return access + refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body LoginRequest true "Login request"
+// @Success 200 {object} LoginResponse
+// @Failure 401 {object} map[string]string
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c fiber.Ctx) error {
 
 	var req LoginRequest
@@ -80,6 +100,16 @@ type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// RefreshToken godoc
+// @Summary Refresh token
+// @Description Generate new access token using refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param body body RefreshRequest true "Refresh token"
+// @Success 200 {object} LoginResponse
+// @Failure 401 {object} map[string]string
+// @Router /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c fiber.Ctx) error {
 
 	var req RefreshRequest

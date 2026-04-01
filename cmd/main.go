@@ -1,3 +1,8 @@
+// @title Netflix Clone API
+// @version 1.0
+// @description Streaming API
+// @host localhost:8080
+// @BasePath /
 package main
 
 import (
@@ -32,9 +37,16 @@ import (
 	// MOVIE
 
 	movieHandlers "github.com/Flook0147/netflix_like/internal/movie/adapter/inbound/http"
+	movieProcessor "github.com/Flook0147/netflix_like/internal/movie/adapter/outbound"
 	movieRepos "github.com/Flook0147/netflix_like/internal/movie/adapter/outbound/db"
 	movieApp "github.com/Flook0147/netflix_like/internal/movie/app"
-	"github.com/Flook0147/netflix_like/internal/router"
+
+	//ROUTER
+	router "github.com/Flook0147/netflix_like/internal/router"
+
+	//Swagger
+	_ "github.com/Flook0147/netflix_like/docs"
+	fiberSwagger "github.com/gofiber/contrib/v3/swaggo"
 )
 
 func main() {
@@ -48,10 +60,6 @@ func main() {
 	// DATABASE
 	// ========================
 	db := initDB()
-
-	// ========================
-	// RABBITMQ (SINGLE CONNECTION)
-	// ========================
 
 	// ========================
 	// USER + AUTH
@@ -85,15 +93,17 @@ func main() {
 	// ========================
 	// Movie
 	// ========================
-
+	bucketName := os.Getenv("GCS_BUCKET_NAME")
 	movieRepo := movieRepos.NewMovieRepository(db)
-	movieService := movieApp.NewMovieService(movieRepo, subscriptionService)
+	processor := movieProcessor.NewVideoProcessor(bucketName)
+	movieService := movieApp.NewMovieService(movieRepo, subscriptionService, processor)
 	movieHandler := movieHandlers.NewMovieHandler(movieService)
 
 	// ========================
 	// HTTP SERVER
 	// ========================
 	app := fiber.New()
+	app.Get("/swagger/*", fiberSwagger.HandlerDefault)
 	router.SetupRoutes(app, router.Handlers{
 		Auth:         authHandler,
 		User:         userHandler,

@@ -22,6 +22,15 @@ type ValidateTokenRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// GetUserFromToken godoc
+// @Summary Get user from token
+// @Description Validate token and return user info
+// @Tags user
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string
+// @Router /user/me [get]
+// @Security BearerAuth
 func (h *UserHandler) GetUserFromToken(c fiber.Ctx) error {
 	token := c.Get("Authorization")
 

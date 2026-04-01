@@ -19,6 +19,13 @@ func NewMovieHandler(service inbound.MoviePort) *MovieHandler {
 	return &MovieHandler{service: service}
 }
 
+// GetMovies godoc
+// @Summary Get all movies
+// @Description Retrieve all available movies
+// @Tags movies
+// @Success 200 {array} domain.Movie
+// @Failure 500 {object} map[string]string
+// @Router /movies [get]
 func (h *MovieHandler) GetMovies(c fiber.Ctx) error {
 	movies, err := h.service.GetMovies()
 	if err != nil {
@@ -27,6 +34,15 @@ func (h *MovieHandler) GetMovies(c fiber.Ctx) error {
 	return c.JSON(movies)
 }
 
+// UploadMovie godoc
+// @Summary Upload movie
+// @Description Upload a video file and convert to HLS
+// @Tags movies
+// @Accept multipart/form-data
+// @Param file formData file true "Video file"
+// @Success 200 {object} domain.Movie
+// @Failure 400 {object} map[string]string
+// @Router /movies [post]
 func (h *MovieHandler) UploadMovie(c fiber.Ctx) error {
 	file, err := c.FormFile("file")
 	if err != nil {

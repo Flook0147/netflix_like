@@ -5,7 +5,6 @@ import (
 
 	"github.com/Flook0147/netflix_like/internal/movie/domain"
 	"github.com/Flook0147/netflix_like/internal/movie/port/outbound"
-	"github.com/Flook0147/netflix_like/internal/movie/utils"
 	"github.com/google/uuid"
 )
 
@@ -17,19 +16,33 @@ const (
 )
 
 type MovieService struct {
-	repo outbound.MovieRepoPort
-	sub  outbound.SubscriptionPort
+	repo      outbound.MovieRepoPort
+	sub       outbound.SubscriptionPort
+	processor outbound.VideoProcessorPort
 }
 
-func NewMovieService(repo outbound.MovieRepoPort, sub outbound.SubscriptionPort) *MovieService {
+func NewMovieService(repo outbound.MovieRepoPort, sub outbound.SubscriptionPort, processor outbound.VideoProcessorPort) *MovieService {
 	return &MovieService{
-		repo: repo,
-		sub:  sub,
+		repo:      repo,
+		sub:       sub,
+		processor: processor,
 	}
 }
 
 func (s *MovieService) CreateMovie(movie *domain.Movie) error {
-	return s.repo.CreateMovie(movie)
+	err := s.repo.CreateMovie(movie)
+	if err != nil {
+		return err
+	}
+	go func() {
+		err := s.processor.ProcessVideo(movie.ID, movie.HLSPath)
+		if err != nil {
+			fmt.Println("process error:", err)
+			return
+		}
+	}()
+
+	return nil
 }
 
 func (s *MovieService) GetMovies() ([]*domain.Movie, error) {
@@ -41,30 +54,24 @@ func (s *MovieService) GetMovieByID(movieID uuid.UUID) (*domain.Movie, error) {
 }
 
 func (s *MovieService) GetMovieStreamURL(viewerID, movieID uuid.UUID) (string, error) {
-
 	movie, err := s.repo.GetMovieByID(movieID)
 	if err != nil {
 		return "", err
 	}
 
-	// TODO: check payment / subscription
 	status, err := s.sub.GetSubscriptionStatus(viewerID)
-
 	if err != nil {
 		return "", err
 	}
 
 	if status != StatusActive {
-		return "", fmt.Errorf("Status is not active")
+		return "", fmt.Errorf("subscription is not active")
 	}
 
-	token, _ := utils.GenerateVideoToken(viewerID, movieID)
-
-	url := fmt.Sprintf(
-		"http://localhost:3000%s?token=%s",
-		movie.HLSPath,
-		token,
-	)
+	url, err := s.processor.GenerateSignedURL(movie.HLSPath)
+	if err != nil {
+		return "", err
+	}
 
 	return url, nil
 }

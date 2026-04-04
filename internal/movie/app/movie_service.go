@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/Flook0147/netflix_like/internal/movie/domain"
 	"github.com/Flook0147/netflix_like/internal/movie/port/outbound"
@@ -29,17 +30,33 @@ func NewMovieService(repo outbound.MovieRepoPort, sub outbound.SubscriptionPort,
 	}
 }
 
-func (s *MovieService) CreateMovie(movie *domain.Movie) error {
+func (s *MovieService) CreateMovie(movie *domain.Movie, inputPath string) error {
 	err := s.repo.CreateMovie(movie)
 	if err != nil {
 		return err
 	}
+
+	// 🔥 async processing
 	go func() {
-		err := s.processor.ProcessVideo(movie.ID, movie.HLSPath)
+		fmt.Println("Start processing:", movie.ID)
+
+		// ✅ ลบไฟล์หลังใช้งานเสร็จ (อยู่ใน goroutine)
+		defer func() {
+			err := os.Remove(inputPath)
+			if err != nil {
+				fmt.Println("failed to remove temp file:", err)
+			} else {
+				fmt.Println("temp file removed:", inputPath)
+			}
+		}()
+
+		err := s.processor.ProcessVideo(movie.ID, inputPath) // ✅ ใช้ mp4 path
 		if err != nil {
 			fmt.Println("process error:", err)
 			return
 		}
+
+		fmt.Println("Done processing:", movie.ID)
 	}()
 
 	return nil

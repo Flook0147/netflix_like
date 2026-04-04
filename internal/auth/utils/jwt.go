@@ -9,6 +9,7 @@ import (
 )
 
 func getJWTSecret() []byte {
+	// fmt.Println("JWT_SECRET:", os.Getenv("JWT_SECRET"))
 	return []byte(os.Getenv("JWT_SECRET"))
 }
 

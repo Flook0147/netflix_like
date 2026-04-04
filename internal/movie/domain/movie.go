@@ -3,7 +3,7 @@ package domain
 import "github.com/google/uuid"
 
 type Movie struct {
-	ID           uuid.UUID `json:"id"`
+	ID           uuid.UUID `json:"movie_id" gorm:"column:movie_id"`
 	Title        string    `json:"title"`
 	ReleaseYear  int       `json:"release_year"`
 	Rating       float64   `json:"rating"`

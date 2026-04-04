@@ -6,7 +6,7 @@ import (
 )
 
 type MoviePort interface {
-	CreateMovie(*domain.Movie) error
+	CreateMovie(movie *domain.Movie, path string) error
 	GetMovies() ([]*domain.Movie, error)
 	GetMovieByID(movieID uuid.UUID) (*domain.Movie, error)
 	GetMovieStreamURL(viewerID, movieID uuid.UUID) (string, error)

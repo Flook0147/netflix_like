@@ -102,7 +102,9 @@ func main() {
 	// ========================
 	// HTTP SERVER
 	// ========================
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		BodyLimit: 200 * 1024 * 1024, // 200 MB
+	})
 	app.Get("/swagger/*", fiberSwagger.HandlerDefault)
 	router.SetupRoutes(app, router.Handlers{
 		Auth:         authHandler,

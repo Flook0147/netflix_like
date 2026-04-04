@@ -8,4 +8,5 @@ func RegisterMovieRoutes(public fiber.Router, protected fiber.Router, handler *M
 
 	movieProtected := protected.Group("/movies")
 	movieProtected.Post("/upload", handler.UploadMovie)
+	movieProtected.Get("/stream/:id", handler.GetMovies)
 }

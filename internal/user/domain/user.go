@@ -9,12 +9,15 @@ type User struct {
 	Name       string    `gorm:"not null"`
 	Email      string    `gorm:"unique;not null"`
 	ProfileURL string
+	Role       string `gorm:"not null;default:'user'"`
 }
 
 type Viewer struct {
-	User
+	User_id   uuid.UUID `gorm:"type:uuid;"`
+	Viewer_id uuid.UUID `gorm:"type:uuid;default:uuid_generate();primaryKey"`
 }
 
-type Administrator struct {
-	User
+type Admin struct {
+	User_id  uuid.UUID `gorm:"type:uuid;"`
+	Admin_id uuid.UUID `gorm:"type:uuid;default:uuid_generate();primaryKey"`
 }

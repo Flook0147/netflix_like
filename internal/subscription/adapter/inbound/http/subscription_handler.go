@@ -27,7 +27,8 @@ func NewSubscriptionHandler(service inbound.SubscriptionPort) *SubscriptionHandl
 // @Security BearerAuth
 func (h *SubscriptionHandler) Subscribe(c fiber.Ctx) error {
 	type reqBody struct {
-		PlanID string `json:"plan_id"`
+		PlanID   string `json:"plan_id"`
+		ViewerID string `json:"viewer_id"`
 	}
 
 	var body reqBody
@@ -35,9 +36,12 @@ func (h *SubscriptionHandler) Subscribe(c fiber.Ctx) error {
 		return err
 	}
 
-	viewerID := c.Locals("userID").(uuid.UUID)
-
 	planID, err := uuid.Parse(body.PlanID)
+	if err != nil {
+		return err
+	}
+
+	viewerID, err := uuid.Parse(body.ViewerID)
 	if err != nil {
 		return err
 	}

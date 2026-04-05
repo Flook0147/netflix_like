@@ -33,13 +33,15 @@ func (h *MovieHandler) GetMovies(c fiber.Ctx) error {
 }
 
 // UploadMovie godoc
-// @Summary Upload movie
-// @Description Upload a video file and convert to HLS
+// @Summary Upload a movie file
+// @Description Upload a video file, process it into HLS format, and return movie metadata
 // @Tags movies
 // @Accept multipart/form-data
-// @Param file formData file true "Video file"
+// @Produce json
+// @Param file formData file true "Video file (e.g., MP4)"
 // @Success 200 {object} domain.Movie
-// @Failure 400 {object} map[string]string
+// @Failure 400 {object} map[string]string "Invalid request or file upload error"
+// @Failure 500 {object} map[string]string "Internal server error during processing"
 // @Router /movies [post]
 func (h *MovieHandler) UploadMovie(c fiber.Ctx) error {
 	file, err := c.FormFile("file")
@@ -48,7 +50,7 @@ func (h *MovieHandler) UploadMovie(c fiber.Ctx) error {
 	}
 
 	movieID := uuid.New()
-	inputPath := fmt.Sprintf("./%s.mp4", movieID.String())
+	inputPath := fmt.Sprintf("./tmp/%s.mp4", movieID.String())
 
 	// save file
 	if err := c.SaveFile(file, inputPath); err != nil {
@@ -68,8 +70,45 @@ func (h *MovieHandler) UploadMovie(c fiber.Ctx) error {
 	return c.JSON(movie)
 }
 
-func (h *MovieHandler) GetMovieStreamURL(c fiber.Ctx) (string, error) {
+// GetMovieStreamURL godoc
+// @Summary Get signed streaming URL
+// @Description Generate a signed HLS URL for streaming if user subscription is active
+// @Tags movies
+// @Produce json
+// @Param id path string true "Movie ID"
+// @Param viewer_id query string true "Viewer ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string "Invalid input"
+// @Failure 403 {object} map[string]string "Subscription inactive"
+// @Failure 500 {object} map[string]string "Internal error"
+// @Router /movies/stream/{id} [get]
+func (h *MovieHandler) GetMovieStreamURL(c fiber.Ctx) error {
 	viewerIDStr := c.Query("viewer_id")
-	movieIDStr := c.Query("movie_id")
-	return h.service.GetMovieStreamURL(uuid.MustParse(viewerIDStr), uuid.MustParse(movieIDStr))
+	movieIDStr := c.Params("id") // 🔥 ใช้ param จาก route
+
+	// validate input
+	viewerID, err := uuid.Parse(viewerIDStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "invalid viewer_id",
+		})
+	}
+
+	movieID, err := uuid.Parse(movieIDStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "invalid movie_id",
+		})
+	}
+
+	url, err := h.service.GetMovieStreamURL(viewerID, movieID)
+	if err != nil {
+		return c.Status(403).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"stream_url": url,
+	})
 }

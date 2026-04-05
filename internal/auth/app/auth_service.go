@@ -34,7 +34,9 @@ func (s *AuthService) Register(username, password, name, email string) error {
 }
 
 func (s *AuthService) Login(username, password string) (string, string, error) {
-
+	fmt.Println("LOGIN FUNCTION CALLED")
+	hash, _ := bcrypt.GenerateFromPassword([]byte("admin"), bcrypt.DefaultCost)
+	fmt.Println(string(hash))
 	user, err := s.userPort.GetUser(username)
 	if err != nil {
 		return "", "", err
@@ -47,13 +49,13 @@ func (s *AuthService) Login(username, password string) (string, string, error) {
 	}
 
 	// generate access token
-	accessToken, err := utils.GenerateAccessToken(user.Username)
+	accessToken, err := utils.GenerateAccessToken(user.Username, user.Role)
 	if err != nil {
 		return "", "", err
 	}
 
 	// generate refresh token
-	refreshToken, err := utils.GenerateRefreshToken(user.Username)
+	refreshToken, err := utils.GenerateRefreshToken(user.Username, user.Role)
 	if err != nil {
 		return "", "", err
 	}
@@ -66,40 +68,55 @@ func (s *AuthService) Login(username, password string) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
-func (s *AuthService) ValidateToken(token string) (string, error) {
-	username, err := utils.ValidateToken(token)
+func (s *AuthService) ValidateToken(token string) (*utils.TokenClaims, error) {
+	claims, err := utils.ValidateToken(token)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return username, nil
+	return claims, nil
 }
 
 func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
 
+	// check token exists in DB
 	_, err := s.refreshTokenPort.FindRefreshToken(refreshToken)
 	if err != nil {
 		return "", "", fmt.Errorf("invalid refresh token")
 	}
 
-	newAccessToken, newRefreshToken, err := utils.RefreshToken(refreshToken)
+	// parse claims จาก refresh token
+	claims, err := utils.ValidateRefreshToken(refreshToken)
 	if err != nil {
 		return "", "", err
 	}
 
-	s.refreshTokenPort.DeleteRefreshToken(refreshToken)
+	// generate new tokens
+	newAccessToken, err := utils.GenerateAccessToken(claims.Username, claims.Role)
+	if err != nil {
+		return "", "", err
+	}
 
-	username, _ := utils.ValidateRefreshToken(newRefreshToken)
-	s.refreshTokenPort.SaveRefreshToken(username, newRefreshToken)
+	newRefreshToken, err := utils.GenerateRefreshToken(claims.Username, claims.Role)
+	if err != nil {
+		return "", "", err
+	}
+
+	// rotate token
+	s.refreshTokenPort.DeleteRefreshToken(refreshToken)
+	err = s.refreshTokenPort.SaveRefreshToken(claims.Username, newRefreshToken)
+	if err != nil {
+		return "", "", err
+	}
 
 	return newAccessToken, newRefreshToken, nil
 }
 
 func (s *AuthService) GetUserFromToken(token string) (*domain.User, error) {
-	username, err := utils.ValidateToken(token)
+	claims, err := utils.ValidateToken(token)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.userPort.GetUser(username)
+	return s.userPort.GetUser(claims.Username)
 }

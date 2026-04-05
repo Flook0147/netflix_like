@@ -10,8 +10,7 @@ import (
 	userhttp "github.com/Flook0147/netflix_like/internal/user/adapter/inbound/http"
 
 	// middleware
-	authMiddleware "github.com/Flook0147/netflix_like/internal/auth/middleware"
-	movieMiddleware "github.com/Flook0147/netflix_like/internal/movie/middleware"
+	middleware "github.com/Flook0147/netflix_like/internal/middleware"
 	"github.com/gofiber/fiber/v3/middleware/static"
 )
 
@@ -27,7 +26,7 @@ func SetupRoutes(app *fiber.App, h Handlers) {
 	// ========================
 	// GLOBAL
 	// ========================
-	app.Use("/videos", movieMiddleware.VideoAuthMiddleware())
+	app.Use("/videos", middleware.VideoAuthMiddleware())
 	app.Use("/videos", static.New("./videos"))
 
 	// ========================
@@ -39,7 +38,7 @@ func SetupRoutes(app *fiber.App, h Handlers) {
 	authhttp.RegisterRoutes(api, h.Auth)
 
 	// 🔐 protected
-	protected := api.Group("/", authMiddleware.JWTMiddleware())
+	protected := api.Group("/", middleware.JWTMiddleware())
 
 	userhttp.RegisterRoutes(protected, h.User)
 	subhttp.RegisterSubscriptionRoutes(protected, h.Subscription)

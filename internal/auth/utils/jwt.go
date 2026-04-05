@@ -13,10 +13,16 @@ func getJWTSecret() []byte {
 	return []byte(os.Getenv("JWT_SECRET"))
 }
 
-func GenerateAccessToken(username string) (string, error) {
+type TokenClaims struct {
+	Username string
+	Role     string
+}
+
+func GenerateAccessToken(username, role string) (string, error) {
 
 	claims := jwt.MapClaims{
 		"username": username,
+		"role":     role,
 		"exp":      time.Now().Add(time.Minute * 15).Unix(),
 	}
 
@@ -25,10 +31,11 @@ func GenerateAccessToken(username string) (string, error) {
 	return token.SignedString(getJWTSecret())
 }
 
-func GenerateRefreshToken(username string) (string, error) {
+func GenerateRefreshToken(username, role string) (string, error) {
 
 	claims := jwt.MapClaims{
 		"username": username,
+		"role":     role,
 		"exp":      time.Now().Add(time.Hour * 24 * 7).Unix(),
 	}
 
@@ -37,63 +44,82 @@ func GenerateRefreshToken(username string) (string, error) {
 	return token.SignedString(getJWTSecret())
 }
 
-func ValidateToken(tokenString string) (string, error) {
-
+func ValidateToken(tokenString string) (*TokenClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return getJWTSecret(), nil
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if !token.Valid {
-		return "", fmt.Errorf("invalid token")
+		return nil, fmt.Errorf("invalid token")
 	}
+
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", fmt.Errorf("invalid token claims")
+		return nil, fmt.Errorf("invalid token claims")
 	}
+
 	username, ok := claims["username"].(string)
 	if !ok {
-		return "", fmt.Errorf("invalid token username")
+		return nil, fmt.Errorf("invalid username")
 	}
-	return username, nil
+
+	role, ok := claims["role"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid role")
+	}
+
+	return &TokenClaims{
+		Username: username,
+		Role:     role,
+	}, nil
 }
 
-func ValidateRefreshToken(tokenString string) (string, error) {
-
+func ValidateRefreshToken(tokenString string) (*TokenClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return getJWTSecret(), nil
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if !token.Valid {
-		return "", fmt.Errorf("invalid token")
+		return nil, fmt.Errorf("invalid token")
 	}
+
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", fmt.Errorf("invalid token claims")
+		return nil, fmt.Errorf("invalid token claims")
 	}
+
 	username, ok := claims["username"].(string)
 	if !ok {
-		return "", fmt.Errorf("invalid token username")
+		return nil, fmt.Errorf("invalid username")
 	}
-	return username, nil
 
+	role, ok := claims["role"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid role")
+	}
+
+	return &TokenClaims{
+		Username: username,
+		Role:     role,
+	}, nil
 }
 
 func RefreshToken(refreshToken string) (string, string, error) {
-	username, err := ValidateRefreshToken(refreshToken)
+	claims, err := ValidateRefreshToken(refreshToken)
 	if err != nil {
 		return "", "", err
 	}
 
-	newToken, err := GenerateAccessToken(username)
+	newToken, err := GenerateAccessToken(claims.Username, claims.Role)
 	if err != nil {
 		return "", "", err
 	}
 
-	newRefreshToken, err := GenerateRefreshToken(username)
+	newRefreshToken, err := GenerateRefreshToken(claims.Username, claims.Role)
 	if err != nil {
 		return "", "", err
 	}

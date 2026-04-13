@@ -53,13 +53,13 @@ func (h *MovieHandler) UploadMovie(c fiber.Ctx) error {
 	inputPath := fmt.Sprintf("./tmp/%s.mp4", movieID.String())
 
 	// save file
-	if err := c.SaveFile(file, inputPath); err != nil {
+	if err := c.SaveFile(file, inputPath); err != nil { //stupid code not apprved by luangjay
 		return err
 	}
 
 	movie := domain.Movie{
 		ID:      movieID,
-		HLSPath: fmt.Sprintf("/videos/%s/index.m3u8", movieID.String()),
+		HLSPath: fmt.Sprintf("videos/%s/index.m3u8", movieID.String()),
 	}
 
 	// 🔥 ส่ง inputPath ไปให้ service
@@ -85,6 +85,8 @@ func (h *MovieHandler) UploadMovie(c fiber.Ctx) error {
 func (h *MovieHandler) GetMovieStreamURL(c fiber.Ctx) error {
 	viewerIDStr := c.Query("viewer_id")
 	movieIDStr := c.Params("id") // 🔥 ใช้ param จาก route
+
+	fmt.Println("viewer id: ", viewerIDStr)
 
 	// validate input
 	viewerID, err := uuid.Parse(viewerIDStr)

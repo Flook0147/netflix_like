@@ -76,14 +76,14 @@ func (s *MovieService) GetMovieStreamURL(viewerID, movieID uuid.UUID) (string, e
 		return "", err
 	}
 
-	status, err := s.sub.GetSubscriptionStatus(viewerID)
-	if err != nil {
-		return "", err
-	}
+	// status, err := s.sub.GetSubscriptionStatus(viewerID)
+	// if err != nil {
+	// 	return "", err
+	// }
 
-	if status != StatusActive {
-		return "", fmt.Errorf("subscription is not active")
-	}
+	// if status != StatusActive {
+	// 	return "", fmt.Errorf("subscription is not active")
+	// }
 
 	url, err := s.processor.GenerateSignedURL(movie.HLSPath)
 	if err != nil {

@@ -26,6 +26,6 @@ func (r *MovieRepository) GetAllMovies() ([]*domain.Movie, error) {
 
 func (r *MovieRepository) GetMovieByID(id uuid.UUID) (*domain.Movie, error) {
 	var movie domain.Movie
-	err := r.db.Where("id = ?", id).First(&movie).Error
+	err := r.db.Where("movie_id = ?", id).First(&movie).Error
 	return &movie, err
 }

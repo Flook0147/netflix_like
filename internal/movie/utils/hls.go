@@ -9,7 +9,14 @@ func ConvertToHLS(inputPath, outputDir string) error {
 	cmd := exec.Command(
 		"ffmpeg",
 		"-i", inputPath,
-		"-codec:", "copy",
+
+		// 🔥 เอา metadata rotation ออก
+		"-metadata:s:v:0", "rotate=0",
+
+		// 🔥 encode ใหม่
+		"-c:v", "libx264",
+		"-c:a", "aac",
+
 		"-start_number", "0",
 		"-hls_time", "10",
 		"-hls_list_size", "0",
